@@ -2,16 +2,16 @@ using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
 {
-    #region: atributes
-    [Header("Displacement atributes")]
+    #region: Inspector attributes
+    [Header("Displacement attributes")]
     [SerializeField][Range(0, 100)] private float _scrollWheelAceleration = 10;
     [SerializeField][Range(0,100)] private float _maxMovSpeed = 25;
     [SerializeField][Range(0, 100)] private float _minMovSpeed = 5;
-    [Header("Rotation atributes")]
+    [Header("Rotation attributes")]
     [SerializeField][Range(0, 360)] private float _maxAngularSpeed = 180;
     [SerializeField][Range(0, 360)] private float _minAngularSpeed = 25;
 
-    [Header("Junp atributes")]
+    [Header("Jump attributes")]
     [SerializeField][Range(0, 9999)] private float _jumpForce = 500;
     [SerializeField] private LayerMask _floorLayer;
     
