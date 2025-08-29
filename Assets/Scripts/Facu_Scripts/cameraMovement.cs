@@ -1,3 +1,4 @@
+using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.InputSystem.LowLevel;
@@ -12,15 +13,16 @@ public class cameraMovement : MonoBehaviour
     [SerializeField]private bool _xAxisInverted = false;
     [SerializeField]private bool _yAxisInverted = false;
     [Header("Camera attributes")]
-    [SerializeField][Range(0, 100)] private float _zoomLevel = 2;
+    [SerializeField][Range(25, 60)] private float _aimingFOV;
     [Header("Cursor attributes")]
     [SerializeField] private CursorLockMode _lockMode = CursorLockMode.Locked;
     [Header("References")]
     [SerializeField] private Transform _target;
-    [SerializeField] private Camera _shoulderCamera;
-    private Vector3 _startPosition;
+    [SerializeField] private Transform _shoulderCameraPosition;
     #endregion
 
+    private Vector3 _startPosition;
+    private float _normalFOV;
     private float _verticalReference;
     private Quaternion _startRotation;
     private float _xAxis = 0;
@@ -33,9 +35,10 @@ public class cameraMovement : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        _startPosition = transform.position;
-        _startRotation = transform.rotation;
+        _startPosition = transform.localPosition;
+        _startRotation = transform.localRotation;
         _camera = Camera.main;
+        _normalFOV = _camera.fieldOfView;
         Cursor.lockState = _lockMode;
         Input.ResetInputAxes();
     }
@@ -60,17 +63,31 @@ public class cameraMovement : MonoBehaviour
             _yAxis = Mathf.Clamp(_yAxis, -1, 0);
         }
 
-
+        if(Input.GetMouseButtonDown(1))
+        {
+            transform.localPosition = _startPosition;
+            transform.localRotation = _startRotation;
+        }
         if (Input.GetMouseButton(1))
         {
+            transform.position = _shoulderCameraPosition.position;
             _target.Rotate(_target.transform.up,_xAxis);
+            _camera.fieldOfView = _aimingFOV;
+
+        }
+        else if (Input.GetMouseButtonUp(1))
+        {
+            transform.localPosition = _startPosition;
+            transform.localRotation = _startRotation;
+            _camera.fieldOfView = _normalFOV;
         }
         else
         {
-            transform.RotateAround(_target.position, transform.right, _yAxis);
+
             transform.LookAt(_target.position);
-        }
             transform.RotateAround(_target.position, _target.up, _xAxis);
+        }
+            transform.RotateAround(_target.position, transform.right, _yAxis);
         
 
     }

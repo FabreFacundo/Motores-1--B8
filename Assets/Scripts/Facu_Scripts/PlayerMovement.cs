@@ -2,8 +2,12 @@ using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
 {
-    #region: Inspector attributes
+  public enum TYPE_OF_MOVEMENT { WITH_LATERAL_DISPLACEMENT, WITHOUT_LATERAL_DISPLACEMENT}
+
+    #region INSPECTOR ATTRIBUTES
+
     [Header("Displacement attributes")]
+    [SerializeField] private TYPE_OF_MOVEMENT _typeOfDisplacement = TYPE_OF_MOVEMENT.WITH_LATERAL_DISPLACEMENT;
     [SerializeField][Range(0, 100)] private float _scrollWheelAceleration = 10;
     [SerializeField][Range(0,100)] private float _maxMovSpeed = 25;
     [SerializeField][Range(0, 100)] private float _minMovSpeed = 5;
@@ -14,8 +18,8 @@ public class PlayerMovement : MonoBehaviour
     [Header("Jump attributes")]
     [SerializeField][Range(0, 9999)] private float _jumpForce = 500;
     [SerializeField] private LayerMask _floorLayer;
-    
-
+    #endregion
+    #region INTERNAL_ATTRIBUTES
     private float _movementSpeed;
     private float _angularSpeed;
     private float _rotationAngle;
@@ -25,14 +29,10 @@ public class PlayerMovement : MonoBehaviour
     private Vector3 _movementOffset;
     private Vector3 _newPosition;
     private Quaternion _rotation = Quaternion.identity;
-
-    private bool _isGrounded = true;
-    private bool _isJumping = false;
     private bool _onShoulderCam = false;
     private Rigidbody _rb;
     #endregion
-
-    #region properties
+    #region PROPERTIES
     public float Speed
     {
         get { return _maxMovSpeed; }
@@ -59,24 +59,15 @@ public class PlayerMovement : MonoBehaviour
 
      void Update()
     {
-
-        if (Input.GetButtonDown("Jump") && _isGrounded && !_isJumping)
-        {
-            _isJumping = true;
-        }
-        else
-        {
-            _interpolationValue += (Input.GetAxis("Mouse ScrollWheel") * _scrollWheelAceleration * Time.deltaTime);
+        #region SPEED_MODIFICATION
+        _interpolationValue += (Input.GetAxis("Mouse ScrollWheel") * _scrollWheelAceleration * Time.deltaTime);
             _interpolationValue = Mathf.Clamp(_interpolationValue, 0f, 1f);
 
             _movementSpeed = Mathf.Lerp(_minMovSpeed, _maxMovSpeed, _interpolationValue);
             _angularSpeed = Mathf.Lerp(_maxAngularSpeed, _minAngularSpeed, _interpolationValue);
-
-
-
-            _moveV = transform.forward * Input.GetAxis("Vertical");
-            _moveH = transform.right * Input.GetAxis("Horizontal_displacement");
-            if(!Input.GetMouseButton(1))
+        #endregion
+        #region LATERAL_ROTATION
+        if (!Input.GetMouseButton(1))
             {
                 _onShoulderCam = false;
                 _rotationAngle = Input.GetAxis("Horizontal") * _angularSpeed * Time.deltaTime;
@@ -86,36 +77,33 @@ public class PlayerMovement : MonoBehaviour
             {
                 _onShoulderCam = true;
             }
-
-
-                _movementOffset = (_moveH + _moveV).normalized * _movementSpeed * Time.deltaTime;
-            _newPosition = transform.position + _movementOffset;
+        #endregion
+        #region LATERAL_DISPLACEMENT
+        if (_typeOfDisplacement==TYPE_OF_MOVEMENT.WITH_LATERAL_DISPLACEMENT)
+        { 
+            _moveH = transform.right * Input.GetAxis("Horizontal");
         }
+        else
+        {
+            _moveH = transform.right * Input.GetAxis("Horizontal_displacement");
+        }
+        #endregion
+
+        _moveV = transform.forward * Input.GetAxis("Vertical");
+        _movementOffset = (_moveH + _moveV).normalized * _movementSpeed * Time.deltaTime;
+        _newPosition = _movementOffset;
+        
 
     }
 
     void FixedUpdate()
     {
-        if(_isGrounded && _isJumping)
-        {
-                _rb.AddForce(transform.up * _jumpForce);
-                _isGrounded = false;
-        }
-        else if( _isGrounded && !_isJumping)
-        {
-            _rb.MovePosition(_newPosition);
-            if(!_onShoulderCam)
+
+        _rb.AddForce(_newPosition);
+            if(!_onShoulderCam && _typeOfDisplacement==TYPE_OF_MOVEMENT.WITHOUT_LATERAL_DISPLACEMENT)
             _rb.MoveRotation(_rotation);
-        }
+       
 
     }
 
-    private void OnCollisionEnter(Collision collision)
-    {
-        if ((1<<collision.gameObject.layer) == _floorLayer)
-        {
-            _isGrounded = true;
-            _isJumping = false; 
-        }
-    }
 }
