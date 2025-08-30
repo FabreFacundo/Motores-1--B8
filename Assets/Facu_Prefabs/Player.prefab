@@ -275,11 +275,13 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4278790100938859978}
+  - component: {fileID: 8418237350532909486}
   - component: {fileID: 5168880406606574039}
   - component: {fileID: 4293388715671918983}
   - component: {fileID: 4251681291244704613}
   - component: {fileID: 3793471844692934201}
   - component: {fileID: 8926384535273802962}
+  - component: {fileID: 2401345404662860199}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -305,6 +307,28 @@ Transform:
   - {fileID: 3291129016747962014}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!95 &8418237350532909486
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7240703235259957432}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: c9e64955f4bfb8e4f8f4473bea4aab7c, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!33 &5168880406606574039
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -390,7 +414,7 @@ Rigidbody:
   m_GameObject: {fileID: 7240703235259957432}
   serializedVersion: 4
   m_Mass: 1
-  m_Drag: 0
+  m_Drag: 3
   m_AngularDrag: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}
   m_InertiaTensor: {x: 1, y: 1, z: 1}
@@ -422,14 +446,30 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _typeOfDisplacement: 0
   _scrollWheelAceleration: 50.2
-  _maxMovSpeed: 15
-  _minMovSpeed: 1
+  _maxMovSpeed: 500
+  _minMovSpeed: 150
   _maxAngularSpeed: 110
   _minAngularSpeed: 45
   _jumpForce: 200
   _floorLayer:
     serializedVersion: 2
     m_Bits: 8
+--- !u!114 &2401345404662860199
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7240703235259957432}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ee9a4d1381de24b42a666fbca61a2d02, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _stealthMultiplier: 0.5
+  _detectionLayer:
+    serializedVersion: 2
+    m_Bits: 64
 --- !u!1 &7435889668881249136
 GameObject:
   m_ObjectHideFlags: 0

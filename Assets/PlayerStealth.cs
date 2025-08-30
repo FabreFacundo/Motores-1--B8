@@ -1,12 +1,19 @@
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class PlayerStealth : MonoBehaviour
 {
+    #region INSPECTIOR_ATTRIBUTES
+    [Header("Stealth attributes")]
     [SerializeField] float _stealthMultiplier = 5;
     [SerializeField] LayerMask _detectionLayer;
+    #endregion
+    #region INTERNAL_ATTRIBUTES
     private Rigidbody _rb;
     float _detectionRadious;
     Collider[] _colliders;
+    private Survilance _enemySurvilance;
+    #endregion
     private void Start()
     {
         _rb = GetComponent<Rigidbody>();    
@@ -20,7 +27,9 @@ public class PlayerStealth : MonoBehaviour
         {
            foreach(Collider enemyEaring in _colliders)
             {
-                Debug.Log("Me detecto el enemigo llamado:" + enemyEaring.gameObject.name);
+                _enemySurvilance = enemyEaring.gameObject.GetComponent<Survilance>();
+                if (_enemySurvilance == false) continue;
+                _enemySurvilance.NoiseDetected(transform.position);
             }
         }
     }

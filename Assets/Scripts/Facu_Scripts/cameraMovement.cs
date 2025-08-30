@@ -5,7 +5,7 @@ using UnityEngine.InputSystem.LowLevel;
 
 public class cameraMovement : MonoBehaviour
 {
-    #region Inspector attributes
+    #region INSPECTOR_ATTRIBUTES
     [Header("Sensitivity attributes")]
     [SerializeField][Range(0,50)] private float _mouseHorizontalSensitivity = 10;
     [SerializeField][Range(0, 50)] private float _mouseVerticallSensitivity = 10;
@@ -20,7 +20,7 @@ public class cameraMovement : MonoBehaviour
     [SerializeField] private Transform _target;
     [SerializeField] private Transform _shoulderCameraPosition;
     #endregion
-
+    #region INTERNAL_ATTRIBUTES
     private Vector3 _startPosition;
     private float _normalFOV;
     private float _verticalReference;
@@ -28,11 +28,10 @@ public class cameraMovement : MonoBehaviour
     private float _xAxis = 0;
     private float _yAxis = 0;
     private Camera _camera;
+    #endregion
 
 
 
-
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         _startPosition = transform.localPosition;
@@ -43,16 +42,15 @@ public class cameraMovement : MonoBehaviour
         Input.ResetInputAxes();
     }
 
-    // Update is called once per frame
     void LateUpdate()
     {
-    
-        // agregar camara de arma
 
-        _yAxis =(_yAxisInverted?-1:1) * -Input.GetAxis("Mouse Y") * _mouseVerticallSensitivity ;
+
+        #region MOUSE_AXIS_PARAMETRIZATION
+        _yAxis = (_yAxisInverted?-1:1) * -Input.GetAxis("Mouse Y") * _mouseVerticallSensitivity ;
         _xAxis = (_xAxisInverted ? -1 : 1) * Input.GetAxis("Mouse X") * _mouseHorizontalSensitivity ;
-        
-        // Limitar el angulo maximo y minimo de la camara
+        #endregion
+        #region VERTICAL_CLAMPING
         _verticalReference = Vector3.Dot(_target.up, (transform.position - _target.position).normalized);
         if(_verticalReference < 0 ) 
         {
@@ -62,8 +60,9 @@ public class cameraMovement : MonoBehaviour
         {
             _yAxis = Mathf.Clamp(_yAxis, -1, 0);
         }
-
-        if(Input.GetMouseButtonDown(1))
+        #endregion
+        #region SHOULDER_CAM_TO_NORMAL_CAM_TRANSITION && ROTATION_APPLICATION
+        if (Input.GetMouseButtonDown(1))
         {
             transform.localPosition = _startPosition;
             transform.localRotation = _startRotation;
@@ -81,6 +80,7 @@ public class cameraMovement : MonoBehaviour
             transform.localRotation = _startRotation;
             _camera.fieldOfView = _normalFOV;
         }
+       
         else
         {
 
@@ -88,7 +88,7 @@ public class cameraMovement : MonoBehaviour
             transform.RotateAround(_target.position, _target.up, _xAxis);
         }
             transform.RotateAround(_target.position, transform.right, _yAxis);
-        
+        #endregion
 
     }
 }
