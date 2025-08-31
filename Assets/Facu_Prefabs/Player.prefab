@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 5158843836006858945}
   - component: {fileID: 6660134649702039663}
   - component: {fileID: 3964436786989854057}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Main Camera
   m_TagString: MainCamera
   m_Icon: {fileID: 0}
@@ -170,7 +170,7 @@ GameObject:
   - component: {fileID: 8397809156131474862}
   - component: {fileID: 3814684671799455728}
   - component: {fileID: 6091970008260014448}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: GFX
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -275,14 +275,15 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4278790100938859978}
-  - component: {fileID: 8418237350532909486}
+  - component: {fileID: 8650090376442071022}
   - component: {fileID: 5168880406606574039}
   - component: {fileID: 4293388715671918983}
   - component: {fileID: 4251681291244704613}
   - component: {fileID: 3793471844692934201}
   - component: {fileID: 8926384535273802962}
   - component: {fileID: 2401345404662860199}
-  m_Layer: 0
+  - component: {fileID: 8252739458015474154}
+  m_Layer: 7
   m_Name: Player
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -307,7 +308,7 @@ Transform:
   - {fileID: 3291129016747962014}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!95 &8418237350532909486
+--- !u!95 &8650090376442071022
 Animator:
   serializedVersion: 7
   m_ObjectHideFlags: 0
@@ -446,14 +447,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _typeOfDisplacement: 0
   _scrollWheelAceleration: 50.2
-  _maxMovSpeed: 500
-  _minMovSpeed: 150
+  _maxForceApplied: 500
+  _minForceApplied: 150
   _maxAngularSpeed: 110
   _minAngularSpeed: 45
-  _jumpForce: 200
-  _floorLayer:
-    serializedVersion: 2
-    m_Bits: 8
 --- !u!114 &2401345404662860199
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -466,10 +463,30 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ee9a4d1381de24b42a666fbca61a2d02, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _stealthMultiplier: 0.5
+  _stealthMultiplier: 5
   _detectionLayer:
     serializedVersion: 2
     m_Bits: 64
+--- !u!114 &8252739458015474154
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7240703235259957432}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e3fdca004f2d45fe8abbed571a8abd5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_SerializedVersion: 0
+  m_OverrideArea: 0
+  m_Area: 0
+  m_OverrideGenerateLinks: 0
+  m_GenerateLinks: 0
+  m_IgnoreFromBuild: 1
+  m_ApplyToChildren: 1
+  m_AffectedAgents: ffffffff
 --- !u!1 &7435889668881249136
 GameObject:
   m_ObjectHideFlags: 0
@@ -479,7 +496,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3291129016747962014}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: ShoulderPosition
   m_TagString: Untagged
   m_Icon: {fileID: 0}
