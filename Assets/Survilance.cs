@@ -26,6 +26,26 @@ public class Survilance : MonoBehaviour
     private int _direction;
     private Quaternion _parentStartRotation;
     #endregion
+
+    public float DetectionTime
+    {
+        get { return _detectionTime; }
+        set {
+            if (value < 0)
+            {
+                _detectionTime = 0;
+            }
+            else if (value > _maxDetectionTime)
+            {
+                _detectionTime = _maxDetectionTime;
+            }
+            else
+            {
+                _detectionTime = value;
+            }
+        }
+    }
+
     private void Start()
     {
         _agent = GetComponentInParent<Enemy_agent>();
@@ -51,7 +71,7 @@ public class Survilance : MonoBehaviour
         // si deja de ver al jugador pero no se acabo el cooldown, voy bajando el cooldown
         if(!_playerInSight && _detectionTime > 0 ) 
         {
-            _detectionTime -= Time.deltaTime * _cooldawnFactor;
+            DetectionTime -= Time.deltaTime * _cooldawnFactor;
         }
         else if (_detectionTime<=0) 
         {
@@ -59,7 +79,6 @@ public class Survilance : MonoBehaviour
             {
                 _agent.ActualState = Enemy_agent.ENEMY_STATE.PATROLLING;
             }
-            _detectionTime = 0;
         }
         // si no veo al jugador retoma el patron visual de busqueda
         if (!_playerInSight)
@@ -122,7 +141,7 @@ public class Survilance : MonoBehaviour
             Debug.Log("On stay: " + checkPlayerCover(collision.gameObject.transform.position));
             if (checkPlayerCover(collision.gameObject.transform.position))
             {
-                _detectionTime += Time.fixedDeltaTime;
+                DetectionTime += Time.fixedDeltaTime;
             }
 
         }
@@ -145,10 +164,13 @@ public class Survilance : MonoBehaviour
     bool checkPlayerCover(Vector3 playerPosition)
     {
         RaycastHit hit;
-        if (Physics.Raycast(transform.position, (playerPosition - transform.position).normalized, out hit, _raycastLayers))
+        Ray ray= new Ray(transform.position, (playerPosition - transform.position).normalized);
+        Debug.DrawRay(transform.position, (playerPosition - transform.position).normalized);
+        if (Physics.Raycast(ray, out hit))
         {
-
-            if (1 << hit.collider.gameObject.layer == _playerLayer)
+            Debug.Log(hit.collider.gameObject.name);
+            bool layComp = (_playerLayer.value & (1 << hit.collider.gameObject.layer)) != 0;
+            if (layComp)
             {
                 return true;
             }

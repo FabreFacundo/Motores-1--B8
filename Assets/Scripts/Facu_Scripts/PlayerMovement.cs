@@ -9,8 +9,8 @@ public class PlayerMovement : MonoBehaviour
     [Header("Displacement attributes")]
     [SerializeField] private TYPE_OF_MOVEMENT _typeOfDisplacement = TYPE_OF_MOVEMENT.WITH_LATERAL_DISPLACEMENT;
     [SerializeField][Range(0, 100)] private float _scrollWheelAceleration = 10;
-    [SerializeField][Range(100, 1000)] private float _maxForceApplied = 500;
-    [SerializeField][Range(100, 1000)] private float _minForceApplied = 150;
+    [SerializeField][Range(100, 10000)] private float _maxForceApplied = 500;
+    [SerializeField][Range(100, 10000)] private float _minForceApplied = 150;
     [Header("Rotation attributes")]
     [SerializeField][Range(0, 360)] private float _maxAngularSpeed = 180;
     [SerializeField][Range(0, 360)] private float _minAngularSpeed = 25;

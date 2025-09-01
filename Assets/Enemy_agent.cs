@@ -37,6 +37,7 @@ public class Enemy_agent : MonoBehaviour
     #region INTERNAL_ATTRIBUTES
     private ENEMY_STATE _actualState = ENEMY_STATE.PATROLLING;
     private Vector3 _startWaypoint;
+    private Vector3 _nextDestination;
     private int _nextWaypoint=1;
     private NavMeshAgent _agent;
     private Vector3 _lastPlayerPosition;
@@ -134,12 +135,15 @@ public class Enemy_agent : MonoBehaviour
     }
     private void Search()
     {
-        _elapsedTime += Time.deltaTime;
+        if (!Agent.isStopped) Agent.isStopped = true;
+       _elapsedTime += Time.deltaTime;
         if(_elapsedTime >= _searchingTime)
         {
+            
             _onSearch = false;
             _actualState = ENEMY_STATE.PATROLLING;
             _elapsedTime = 0;
+             Agent.isStopped = false;
         }
     }
     private void Patrol()
@@ -152,6 +156,7 @@ public class Enemy_agent : MonoBehaviour
             _startWaypoint = _patrolSector.Waypoints[0];
             _agent.speed = _patrolSpeed;
             _agent.destination=_startWaypoint;
+            _startWaypoint = _agent.destination;
         }
         else
         {
@@ -171,22 +176,27 @@ public class Enemy_agent : MonoBehaviour
 
    private void CircularPatrol()
     {
-
-            if (!_agent.pathPending && _agent.remainingDistance <= _stoppingDistance)
+      
+        
+        if (!_agent.pathPending && _agent.remainingDistance <= _stoppingDistance)
+        {
+            
+            if (_nextWaypoint == _patrolSector.Waypoints.Count)
             {
-                if (_nextWaypoint == _patrolSector.Waypoints.Count) {
-                    _nextWaypoint = 0;
-                }
-                _agent.destination = _patrolSector.Waypoints[_nextWaypoint];
-                _nextWaypoint++;
-            if (_nextWaypoint == 0 || _nextWaypoint == _patrolSector.Waypoints.Count - 1)
+                _nextWaypoint = 0;
+                _actualState = ENEMY_STATE.SEARCHING;
+            }
+            else if (_startWaypoint == _agent.destination)
             {
                 _actualState = ENEMY_STATE.SEARCHING;
             }
+            _agent.destination = _patrolSector.Waypoints[_nextWaypoint];
+            _nextWaypoint++;
         }
-    }
+    
+    }   
 
-    private void OneWayPatrol()
+private void OneWayPatrol()
     {
         if (!_agent.pathPending && _agent.remainingDistance <= _stoppingDistance)
         {
