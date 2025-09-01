@@ -9,7 +9,7 @@ using UnityEngine.UIElements;
 public class Enemy_agent : MonoBehaviour
 {
     public enum ENEMY_STATE { PATROLLING, INVESTIGATING, SEARCHING, ATTACKING }
-    public enum ENEMY_PATROL_TYPE { ONE_WAY, FORWARD_AND_BACK, CIRCULAR }
+    public enum ENEMY_PATROL_TYPE { ONE_WAY, CIRCULAR }
     #region INSPECTOR_ATTRIBUTES
 
   
@@ -26,7 +26,7 @@ public class Enemy_agent : MonoBehaviour
     [SerializeField][Range(0.1f, 50f)] private float _aceleration = 5f;
 
     [Header("Attack attributes")]
-    [SerializeField][Range(0.1f, 50f)] private float _minimalAttacKDistance;
+    [SerializeField][Range(0.1f, 50f)] private float _minimalAttacKDistance = 2;
 
     [Header("Searching attributes")]
     [SerializeField][Range(0.1f, 50f)] private float _searchingTime = 5;
@@ -137,8 +137,9 @@ public class Enemy_agent : MonoBehaviour
         _elapsedTime += Time.deltaTime;
         if(_elapsedTime >= _searchingTime)
         {
-            _actualState = ENEMY_STATE.PATROLLING;
             _onSearch = false;
+            _actualState = ENEMY_STATE.PATROLLING;
+            _elapsedTime = 0;
         }
     }
     private void Patrol()
@@ -150,7 +151,7 @@ public class Enemy_agent : MonoBehaviour
         {
             _startWaypoint = _patrolSector.Waypoints[0];
             _agent.speed = _patrolSpeed;
-            _agent.SetDestination(_startWaypoint);
+            _agent.destination=_startWaypoint;
         }
         else
         {
@@ -162,12 +163,9 @@ public class Enemy_agent : MonoBehaviour
                 case ENEMY_PATROL_TYPE.CIRCULAR:
                     CircularPatrol();
                     break;
-                case ENEMY_PATROL_TYPE.FORWARD_AND_BACK:
-                    ForwardBackPatrol();
-                    break;
             }
         }
-            
+     
 
     }
 
@@ -176,11 +174,16 @@ public class Enemy_agent : MonoBehaviour
 
             if (!_agent.pathPending && _agent.remainingDistance <= _stoppingDistance)
             {
-                if (_nextWaypoint == _patrolSector.Waypoints.Count) _nextWaypoint = 0;
+                if (_nextWaypoint == _patrolSector.Waypoints.Count) {
+                    _nextWaypoint = 0;
+                }
                 _agent.destination = _patrolSector.Waypoints[_nextWaypoint];
                 _nextWaypoint++;
-
+            if (_nextWaypoint == 0 || _nextWaypoint == _patrolSector.Waypoints.Count - 1)
+            {
+                _actualState = ENEMY_STATE.SEARCHING;
             }
+        }
     }
 
     private void OneWayPatrol()
@@ -198,24 +201,7 @@ public class Enemy_agent : MonoBehaviour
         }
     }
 
-    private void ForwardBackPatrol()
-    {
-
-        if (!_agent.pathPending && _agent.remainingDistance <= _stoppingDistance)
-        {
-            if (_nextWaypoint == _patrolSector.Waypoints.Count - 1 || _nextWaypoint == 0)
-            {
-                _invertPatrol = !_invertPatrol;
-            }
    
-            _agent.destination = _patrolSector.Waypoints[_nextWaypoint];
-            if(_invertPatrol)
-                _nextWaypoint--;
-            else
-                _nextWaypoint++;
-
-        }
-    }
 
 
     #region ON_SCENE_VISUALIZATION
