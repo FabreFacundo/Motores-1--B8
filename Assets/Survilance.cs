@@ -4,87 +4,67 @@ using UnityEngine.UIElements;
 public class Survilance : MonoBehaviour
 {
     #region INSPECTOR_ATTRIBUTES
-    [SerializeField] private float _maxDetectionTime = 3f;
-    [SerializeField][Range(0.01f,1f)]private float _cooldawnFactor = 0.2f;
+    [Header("Detection time attributes")]
+    [SerializeField] private float _maxSuspectionTime = 3f;
+    [SerializeField] private float _maxDetectionTime = 5f;
+    [SerializeField][Range(0.01f,2f)]private float _cooldawnFactor = 2f;
+    [Header("Physics attributes")]
     [SerializeField] private LayerMask _playerLayer;
-    [SerializeField] private LayerMask _raycastLayers;
+    [SerializeField] private LayerMask _obstaclesLayers;
+    [Header("Search cone Attributes")]
     [SerializeField] private float _coneRotationSpeed;
     [SerializeField] private float _maxAngle = 90f;
-    [SerializeField] private float _lookDampening = 5;
     [SerializeField] private float _minimalDetectionDistance = 2;
+    
+    [Header("Parent transform")]
     [SerializeField] private Transform _parent;
     #endregion
     #region INTERNAL_ATTRIBUTES
  
-    private Enemy_agent _agent;
-    private Vector3 _playerDirection;
-    private float _detectionTime;
+    private Enemy_agent _enemyAgent;
+    private float _detectedTime;
     private bool _playerDetected;
-    private RaycastHit hit;
     private bool _playerInSight;
     private bool _positiveRotation;
     private int _direction;
-    private Quaternion _parentStartRotation;
     #endregion
 
-    public float DetectionTime
+    public float DetectedTime
     {
-        get { return _detectionTime; }
+        get { return _detectedTime; }
         set {
             if (value < 0)
             {
-                _detectionTime = 0;
+                _detectedTime = 0;
             }
             else if (value > _maxDetectionTime)
             {
-                _detectionTime = _maxDetectionTime;
+                _detectedTime = _maxDetectionTime;
             }
             else
             {
-                _detectionTime = value;
+                _detectedTime = value;
             }
         }
     }
 
     private void Start()
     {
-        _agent = GetComponentInParent<Enemy_agent>();
-        _parentStartRotation = _parent.localRotation;
-
-
-
+        _enemyAgent = GetComponentInParent<Enemy_agent>();
     }
-     private void Update()
+     private void LateUpdate()
     {
-        // si el esta buscando al jugador, lo veo y se cumplen el tiempo de deteccion o la distancia es menor a la minima
-        // inicia ataque.
-        if ((_agent.OnSearch && _playerInSight) &&
-            (_detectionTime > _maxDetectionTime ||
-            _agent.Agent.remainingDistance < _minimalDetectionDistance))
+        #region SIGHT_SEARCHING_PATTERN
+        if (_playerDetected)
         {
-            SightDetected();
+            // en caso de que el jugador fuese detecado, el cono se fija sobre la ultima posicion conocida
+            // se modifica el eje Y para que mantenga la misma altura del _parent asi no se arruina la rotacion.
+            _parent.LookAt(new Vector3(_enemyAgent.LastPlayerPosition.x,_parent.position.y, _enemyAgent.LastPlayerPosition.z));
         }
-        
-       
+        else
+        {
 
-       
-        // si deja de ver al jugador pero no se acabo el cooldown, voy bajando el cooldown
-        if(!_playerInSight && _detectionTime > 0 ) 
-        {
-            DetectionTime -= Time.deltaTime * _cooldawnFactor;
-        }
-        else if (_detectionTime<=0) 
-        {
-            if(_agent.OnSearch) // finaliza la busqueda y vuelve a patrulla
-            {
-                _agent.ActualState = Enemy_agent.ENEMY_STATE.PATROLLING;
-            }
-        }
-        // si no veo al jugador retoma el patron visual de busqueda
-        if (!_playerInSight)
-        {
-            
-            if(Quaternion.Angle(_parent.localRotation, Quaternion.Euler(0, _maxAngle, 0))<1f)
+            if (Quaternion.Angle(_parent.localRotation, Quaternion.Euler(0, _maxAngle, 0)) < 1f)
             {
                 _positiveRotation = true;
             }
@@ -94,88 +74,95 @@ public class Survilance : MonoBehaviour
                 _positiveRotation = false;
             }
             _direction = _positiveRotation ? -1 : 1;
-            _parent.Rotate(_parent.up , _direction * _coneRotationSpeed * Time.deltaTime,Space.Self);
+            _parent.Rotate(_parent.up, _direction * _coneRotationSpeed * Time.deltaTime, Space.Self);
         }
-        else // si ve al jugador lo busca con la mirada, se interpolan para suavizar el seguimiento
+        #endregion
+
+        if (_playerInSight)
+        { 
+            DetectedTime += Time.deltaTime;
+        }
+        else
         {
-            _parent.LookAt(_agent.Player.position);
+            DetectedTime -= Time.deltaTime * _cooldawnFactor;
+            // en caso que se haya perdido el contacto visual, se cancela el ataque y se investiga la ultima posicion
+            if (_enemyAgent.ActualState == Enemy_agent.ENEMY_STATE.ATTACKING) CallToInvestigate();
         }
-        
+
+        if (DetectedTime >= _maxSuspectionTime && !_enemyAgent.OnInvestigation)
+        {
+            // en caso que el jugador haya estado lo suficente a la vista, y no se lo este buscando, se genera la busqueda
+            CallToInvestigate();
+        }
+        // si ya se lo esta buscando al jugador, este permance a la vista mas tiempo o
+        // la distancia que los separa es menor a el limite
+        // se lo detecta visualmente y se habilita el ataque
+        else if (_enemyAgent.OnInvestigation &&
+            (DetectedTime >= _maxDetectionTime) ||
+            Vector3.Distance(_enemyAgent.Player.transform.position,_parent.position) < _minimalDetectionDistance)
+        {
+            SightDetected();
+        }
+       if(DetectedTime<=0) 
+            // en caso que se haya bajado el tiempo sin que el jugador haya sido detectado
+            // se deja de detectarlo
+        {
+            _playerDetected = false;
+            
+        }
 
     }
     public void NoiseDetected(Vector3 position)
     {
-        CallToInvestigate(position);
-        
+        _enemyAgent.LastPlayerPosition = position;
+        CallToInvestigate();
     }
     private void SightDetected()
     {
-        _agent.ActualState = Enemy_agent.ENEMY_STATE.ATTACKING;
+        _enemyAgent.ActualState = Enemy_agent.ENEMY_STATE.ATTACKING;
+    }
+    private void CallToInvestigate()
+    {
+        _enemyAgent.ActualState = Enemy_agent.ENEMY_STATE.INVESTIGATING;
     }
 
-    private void CallToInvestigate(Vector3 position)
+    bool checkPlayerCover(Vector3 playerPosition) // esta funcion permite saber si hay un obstaculo entre ambos objetos
     {
-        _agent.LastPlayerPosition = position;
-        _agent.ActualState = Enemy_agent.ENEMY_STATE.INVESTIGATING;
-    }
-
-     void OnTriggerEnter(Collider collision)
-    {
-    
-      
-        if (1 << collision.gameObject.layer == _playerLayer)
+        
+        Debug.DrawLine(_parent.transform.position, playerPosition,Color.black);
+        if (Physics.Linecast(_parent.transform.position, playerPosition,_obstaclesLayers,QueryTriggerInteraction.Ignore))
         {
-            Debug.Log("On enter: "+checkPlayerCover(collision.gameObject.transform.position));
-           if (checkPlayerCover(collision.gameObject.transform.position))
-            {
-                CallToInvestigate(collision.gameObject.transform.position);
-                _playerInSight = true;
-            }
-         
+            return false;
         }
+        return true;
     }
      void OnTriggerStay(Collider collision)
     {
-        if(1<<collision.gameObject.layer == _playerLayer )
+        // compara las layers entre el objeto que esta dentro del trigger, 
+        // si es el jugador, lo detecta y va actualizando su posicion mientras sea detectado y no tenga obstaculos en el medio
+        if((1 << collision.gameObject.layer & _playerLayer) != 0)
         {
-            Debug.Log("On stay: " + checkPlayerCover(collision.gameObject.transform.position));
-            if (checkPlayerCover(collision.gameObject.transform.position))
+            _playerInSight = checkPlayerCover(collision.transform.position);
+           
+            if (_playerInSight)
             {
-                DetectionTime += Time.fixedDeltaTime;
+                if (!_playerDetected)
+                {
+                    _playerDetected = true;
+                }
+                _enemyAgent.LastPlayerPosition = collision.transform.position;
             }
-
+          
         }
     }
-    private void OnTriggerExit(Collider collision)
-    {
-        Debug.Log("On exit: " + checkPlayerCover(collision.gameObject.transform.position));
-        if (1 << collision.gameObject.layer == _playerLayer)
-        {
-            if(_playerInSight)
-            {
-                _agent.LastPlayerPosition = collision.gameObject.transform.position;
-                _playerInSight = false;
-                _parent.localRotation = _parentStartRotation;
-            }
-         
-        } 
-    }
+    private void OnTriggerExit(Collider collider)
 
-    bool checkPlayerCover(Vector3 playerPosition)
-    {
-        RaycastHit hit;
-        Ray ray= new Ray(transform.position, (playerPosition - transform.position).normalized);
-        Debug.DrawRay(transform.position, (playerPosition - transform.position).normalized);
-        if (Physics.Raycast(ray, out hit))
+    {   // en caso de que salga del cono de vision, y no este obstaculizado, guarda la ultima posicion conocida del jugador.
+        if (checkPlayerCover(collider.transform.position))
         {
-            Debug.Log(hit.collider.gameObject.name);
-            bool layComp = (_playerLayer.value & (1 << hit.collider.gameObject.layer)) != 0;
-            if (layComp)
-            {
-                return true;
-            }
-            return false;
+          _enemyAgent.LastPlayerPosition = collider.transform.position;
         }
-        return false;
+        _playerInSight = false; // marca que el jugador no esta siendo visto
+       
     }
 }

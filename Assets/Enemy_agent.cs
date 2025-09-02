@@ -41,15 +41,16 @@ public class Enemy_agent : MonoBehaviour
     private int _nextWaypoint=1;
     private NavMeshAgent _agent;
     private Vector3 _lastPlayerPosition;
-    private bool _onSearch;
+    private bool _onInvestigation;
     private bool _invertPatrol;
     private float _elapsedTime=0;
     private Transform _player;
+
     #endregion
     #region PROPERTIES
-    public bool OnSearch
+    public bool OnInvestigation
     {
-        get { return _onSearch; }
+        get { return _onInvestigation; }
     }
     public Vector3 LastPlayerPosition
     {
@@ -86,14 +87,14 @@ public class Enemy_agent : MonoBehaviour
     }
     void Update()
     {
-      
+       // Estado actual del enemigo
         switch (_actualState)
         {
             case ENEMY_STATE.PATROLLING:
                  Patrol();
                 break;
             case ENEMY_STATE.INVESTIGATING:
-                Investigate(_lastPlayerPosition);
+                Investigate();
                 break;
             case ENEMY_STATE.SEARCHING:
                 Search();
@@ -107,9 +108,14 @@ public class Enemy_agent : MonoBehaviour
 
     private void Attack()
     {
+        // comprueba la existencia del jugador antes de querer atacar
         if (_player == null) return;
+        
+        //modifica la velocidad y asigna el destino del navmesh agent a la posicion del jugador
         _agent.speed = _attackingSpeed;
         _agent.destination = _player.position;
+
+        // comprueba la distancia faltante, si es menor a la minima de ataque, se detiene y ataca, de lo contrario sigue adelante
         if (_agent.remainingDistance < _minimalAttacKDistance)
         {
             _agent.isStopped = true;
@@ -117,30 +123,36 @@ public class Enemy_agent : MonoBehaviour
         }
         else _agent.isStopped = false;
     }
-    private void Investigate(Vector3 playerPosition)
+    private void Investigate()
     {
-        if (!_onSearch)
-        {
-            _agent.speed = _searchingSpeed;
-            _agent.destination = playerPosition;
-            _onSearch = true;
-        }
 
-        if (!_agent.pathPending && _agent.remainingDistance <= _stoppingDistance)
+        // si no esta en modo busqueda, comprueba si no fue detenido ( por el estado SEARCHING)
+        if (!_onInvestigation)
         {
-            _actualState = ENEMY_STATE.SEARCHING;
+            if (Agent.isStopped) Agent.isStopped = false;
+
+            // asigna la velocidad de busqueda, asigna la ultima posicion conocida del jugador y activa modo busqueda.
+            _agent.speed = _searchingSpeed;
+            _agent.destination = _lastPlayerPosition;
+            _onInvestigation = true;
+        } 
+        else if (!_agent.pathPending && _agent.remainingDistance <= _stoppingDistance)
+        {
+            // en caso de haber llegado a destino, sin haber encontrado nada, se pasas a estado SEARCHING
+            _actualState = ENEMY_STATE.SEARCHING; 
         }
 
 
     }
     private void Search()
     {
+        // detiene al navmesh y espera un tiempo dado en segundos contando cada duracion de frame.
         if (!Agent.isStopped) Agent.isStopped = true;
        _elapsedTime += Time.deltaTime;
         if(_elapsedTime >= _searchingTime)
         {
-            
-            _onSearch = false;
+            //si no cambia nada, vuelve a la patrulla, canselando la investigacion, y devolviendo movimiento al navmesh
+            _onInvestigation = false;
             _actualState = ENEMY_STATE.PATROLLING;
             _elapsedTime = 0;
              Agent.isStopped = false;
@@ -148,18 +160,21 @@ public class Enemy_agent : MonoBehaviour
     }
     private void Patrol()
     {
-
+        
         if(_patrolSector == null) return;
         if (_patrolSector.Waypoints.Count == 0) return;
+
+        // comprueba si no se tiene una ruta hecha, modifica la velocidad, y asigna el primer waypoint  de la lista
+        // como destino, ademas lo guarda correjido por el navmesh en otra variable
         if (!_agent.hasPath)
         {
-            _startWaypoint = _patrolSector.Waypoints[0];
             _agent.speed = _patrolSpeed;
-            _agent.destination=_startWaypoint;
+            _agent.destination = _patrolSector.Waypoints[0]; ;
             _startWaypoint = _agent.destination;
         }
         else
         {
+            // elige el tipo de ruta
             switch (_patrolType)
             {
                 case ENEMY_PATROL_TYPE.ONE_WAY:
@@ -177,29 +192,33 @@ public class Enemy_agent : MonoBehaviour
    private void CircularPatrol()
     {
       
-        
+        // calcula si ya llego al waypoint objetivo
         if (!_agent.pathPending && _agent.remainingDistance <= _stoppingDistance)
         {
-            
+            // comprueba si es el ultimo punto de la ruta, realiza una busqueda, y resetea la patrulla
             if (_nextWaypoint == _patrolSector.Waypoints.Count)
             {
                 _nextWaypoint = 0;
                 _actualState = ENEMY_STATE.SEARCHING;
             }
+            // comprueba si es el primer punto de la ruta y realiza una busqueda
             else if (_startWaypoint == _agent.destination)
             {
                 _actualState = ENEMY_STATE.SEARCHING;
             }
-            _agent.destination = _patrolSector.Waypoints[_nextWaypoint];
+            // asigna el siguente punto, e incrementa el contador
+            _agent.destination = _patrolSector.Waypoints[_nextWaypoint]; 
             _nextWaypoint++;
         }
     
     }   
 
-private void OneWayPatrol()
+private void OneWayPatrol() // util para personajes que deben hacer un camino y detenerse ( como para cinematicas)
     {
+
         if (!_agent.pathPending && _agent.remainingDistance <= _stoppingDistance)
         {
+            // en caso de haber llegado al final del recorrido hace una busqueda y se detiene
             if (_nextWaypoint == _patrolSector.Waypoints.Count)
             {
                 _actualState = ENEMY_STATE.SEARCHING;

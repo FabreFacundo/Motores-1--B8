@@ -27,7 +27,7 @@ public class PlayerStealth : MonoBehaviour
         {
            foreach(Collider enemyEaring in _colliders)
             {
-                _enemySurvilance = enemyEaring.gameObject.GetComponent<Survilance>();
+                _enemySurvilance = enemyEaring.gameObject.GetComponentInChildren<Survilance>();
                 if (_enemySurvilance == false) continue;
                 _enemySurvilance.NoiseDetected(transform.position);
             }
