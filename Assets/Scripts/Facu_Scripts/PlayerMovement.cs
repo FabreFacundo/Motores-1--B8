@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
@@ -7,23 +8,26 @@ public class PlayerMovement : MonoBehaviour
     #region INSPECTOR ATTRIBUTES
 
     [Header("Displacement attributes")]
+    [SerializeField] public float _maxWalkVelocity = 15;
+    [SerializeField] public float _maxSprintVelocity = 25;
     [SerializeField] private TYPE_OF_MOVEMENT _typeOfDisplacement = TYPE_OF_MOVEMENT.WITH_LATERAL_DISPLACEMENT;
     [SerializeField][Range(0, 100)] private float _scrollWheelAceleration = 10;
-    [SerializeField][Range(100, 10000)] private float _maxForceApplied = 500;
-    [SerializeField][Range(100, 10000)] private float _minForceApplied = 150;
+    [SerializeField] private float _maxForceApplied = 500;
+    [SerializeField] private float _minForceApplied = 150;
     [Header("Rotation attributes")]
     [SerializeField][Range(0, 360)] private float _maxAngularSpeed = 180;
     [SerializeField][Range(0, 360)] private float _minAngularSpeed = 25;
-    /*
-    [Header("Jump attributes")]
-    [SerializeField][Range(0, 9999)] private float _jumpForce = 500;
-    [SerializeField] private LayerMask _floorLayer;*/
+    [Header("Animations attributes")]
+    [SerializeField][Range(0, 2)] private float _stanceChangeMultiplier = 0.5f;
+    [SerializeField][Range(0.1f, 5)] private float _animationSpeedMultiplier = 0.5f;
+    [SerializeField] private Animator _animator;
     #endregion
     #region INTERNAL_ATTRIBUTES
     private float _forceVectorMagnitude;
     private float _angularSpeed;
     private float _rotationAngle;
     private float _interpolationValue;
+    private float _stance;
     private Vector3 _moveV;
     private Vector3 _moveH;
     private Vector3 _forceVector;
@@ -54,6 +58,7 @@ public class PlayerMovement : MonoBehaviour
     {
         _rb = GetComponent<Rigidbody>();
         _rb.freezeRotation = true;
+        _rb.maxLinearVelocity = _maxWalkVelocity;
     }
 
     void Update()
@@ -91,17 +96,34 @@ public class PlayerMovement : MonoBehaviour
         _moveV = transform.forward * Input.GetAxis("Vertical");
         _forceVector = (_moveH + _moveV).normalized * _forceVectorMagnitude * Time.deltaTime;
         #endregion
+        #region STANCE_MODIFICATION
+        if (Input.GetButton("Crouch"))
+        {
+            _stance += Time.deltaTime * _stanceChangeMultiplier;
+            if(_stance > 1) _stance = 1;    
+            _animator.SetFloat("Stances_value", _stance);
+        }
+        if(Input.GetButton("StandUp"))
+        {
+            _stance -= Time.deltaTime * _stanceChangeMultiplier;
+            if( _stance < 0 ) _stance = 0;
+            _animator.SetFloat("Stances_value", _stance);
+        }
 
+        #endregion
 
     }
 
     void FixedUpdate()
     {
 
-        _rb.AddForce(_forceVector);
+        _rb.AddForce(_forceVector );
         if (!_onShoulderCam && _typeOfDisplacement == TYPE_OF_MOVEMENT.WITHOUT_LATERAL_DISPLACEMENT)
             _rb.MoveRotation(_rotation);
+      
 
+            _animator.speed = (_rb.linearVelocity.magnitude * _animationSpeedMultiplier) / _maxWalkVelocity;
+       
 
     }
 
