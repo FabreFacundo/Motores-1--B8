@@ -1,4 +1,5 @@
 using System;
+using Unity.Mathematics;
 using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
@@ -8,9 +9,10 @@ public class PlayerMovement : MonoBehaviour
     #region INSPECTOR ATTRIBUTES
 
     [Header("Displacement attributes")]
-    [SerializeField] public float _maxWalkVelocity = 15;
-    [SerializeField] public float _maxSprintVelocity = 25;
     [SerializeField] private TYPE_OF_MOVEMENT _typeOfDisplacement = TYPE_OF_MOVEMENT.WITH_LATERAL_DISPLACEMENT;
+    [SerializeField] public float _maxNormalVelocity = 15;
+    [SerializeField] public float _maxSprintVelocity = 25;
+    [SerializeField] public float _minNormalVelocity = 4;
     [SerializeField][Range(0, 100)] private float _scrollWheelAceleration = 10;
     [SerializeField] private float _maxForceApplied = 500;
     [SerializeField] private float _minForceApplied = 150;
@@ -21,11 +23,17 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField][Range(0, 2)] private float _stanceChangeMultiplier = 0.5f;
     [SerializeField][Range(0.1f, 5)] private float _animationSpeedMultiplier = 0.5f;
     [SerializeField] private Animator _animator;
+
+    [SerializeField] private CapsuleCollider _capsuleCollider;
+    [SerializeField] private CapsuleCollider _crawlCapsuleCollider;
+
+
     #endregion
     #region INTERNAL_ATTRIBUTES
     private float _forceVectorMagnitude;
     private float _angularSpeed;
     private float _rotationAngle;
+    private float _maxVelocity;
     private float _interpolationValue;
     private float _stance;
     private Vector3 _moveV;
@@ -58,7 +66,8 @@ public class PlayerMovement : MonoBehaviour
     {
         _rb = GetComponent<Rigidbody>();
         _rb.freezeRotation = true;
-        _rb.maxLinearVelocity = _maxWalkVelocity;
+        _maxVelocity = _maxNormalVelocity;
+        _rb.maxLinearVelocity = _maxVelocity;
     }
 
     void Update()
@@ -109,7 +118,8 @@ public class PlayerMovement : MonoBehaviour
             if( _stance < 0 ) _stance = 0;
             _animator.SetFloat("Stances_value", _stance);
         }
-
+        _maxVelocity = math.lerp(_maxNormalVelocity, _minNormalVelocity, _stance);
+        _rb.maxLinearVelocity = _maxVelocity;
         #endregion
 
     }
@@ -120,9 +130,9 @@ public class PlayerMovement : MonoBehaviour
         _rb.AddForce(_forceVector );
         if (!_onShoulderCam && _typeOfDisplacement == TYPE_OF_MOVEMENT.WITHOUT_LATERAL_DISPLACEMENT)
             _rb.MoveRotation(_rotation);
-      
 
-            _animator.speed = (_rb.linearVelocity.magnitude * _animationSpeedMultiplier) / _maxWalkVelocity;
+            _animator.speed = (_rb.linearVelocity.magnitude) / _maxVelocity; //  * _animationSpeedMultiplier
+        Debug.Log(_animator.speed);
        
 
     }

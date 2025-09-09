@@ -1,0 +1,1 @@
+cambiar capsule collider a box collider asi podemos lerpear de una posición a otra :D 
