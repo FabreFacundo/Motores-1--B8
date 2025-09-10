@@ -24,8 +24,10 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField][Range(0.1f, 5)] private float _animationSpeedMultiplier = 0.5f;
     [SerializeField] private Animator _animator;
 
-    [SerializeField] private CapsuleCollider _capsuleCollider;
-    [SerializeField] private CapsuleCollider _crawlCapsuleCollider;
+    [Header("Colliders references")]
+    [SerializeField] private BoxCollider _walkCollider;
+    [SerializeField] private BoxCollider _crawlCollider;
+    [SerializeField] private BoxCollider _collider;
 
 
     #endregion
@@ -105,7 +107,7 @@ public class PlayerMovement : MonoBehaviour
         _moveV = transform.forward * Input.GetAxis("Vertical");
         _forceVector = (_moveH + _moveV).normalized * _forceVectorMagnitude * Time.deltaTime;
         #endregion
-        #region STANCE_MODIFICATION
+        #region STANCE_MODIFICATION_&_COLLISION
         if (Input.GetButton("Crouch"))
         {
             _stance += Time.deltaTime * _stanceChangeMultiplier;
@@ -120,6 +122,9 @@ public class PlayerMovement : MonoBehaviour
         }
         _maxVelocity = math.lerp(_maxNormalVelocity, _minNormalVelocity, _stance);
         _rb.maxLinearVelocity = _maxVelocity;
+        _collider.center = Vector3.Lerp(_walkCollider.center, _crawlCollider.center, _stance);
+        _collider.size = Vector3.Lerp(_walkCollider.size, _crawlCollider.size, _stance);
+
         #endregion
 
     }
@@ -130,11 +135,7 @@ public class PlayerMovement : MonoBehaviour
         _rb.AddForce(_forceVector );
         if (!_onShoulderCam && _typeOfDisplacement == TYPE_OF_MOVEMENT.WITHOUT_LATERAL_DISPLACEMENT)
             _rb.MoveRotation(_rotation);
-
-            _animator.speed = (_rb.linearVelocity.magnitude) / _maxVelocity; //  * _animationSpeedMultiplier
-        Debug.Log(_animator.speed);
-       
-
+        _animator.speed = (_rb.linearVelocity.magnitude) / _maxVelocity; //  * _animationSpeedMultiplier
     }
 
 }

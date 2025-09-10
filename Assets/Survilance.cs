@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -27,6 +28,7 @@ public class Survilance : MonoBehaviour
     private bool _playerInSight;
     private bool _positiveRotation;
     private int _direction;
+    Vector3[] _playerColliderLimits = new Vector3[7];
     #endregion
 
     public float DetectedTime
@@ -126,15 +128,26 @@ public class Survilance : MonoBehaviour
         _enemyAgent.ActualState = Enemy_agent.ENEMY_STATE.INVESTIGATING;
     }
 
-    bool checkPlayerCover(Vector3 playerPosition) // esta funcion permite saber si hay un obstaculo entre ambos objetos
+    bool checkPlayerCover(Collider playerCollider) // esta funcion permite saber si hay un obstaculo entre ambos objetos
     {
-        
-        Debug.DrawLine(_parent.transform.position, playerPosition,Color.black);
-        if (Physics.Linecast(_parent.transform.position, playerPosition,_obstaclesLayers,QueryTriggerInteraction.Ignore))
+   
+        _playerColliderLimits[0] = playerCollider.transform.position;
+        _playerColliderLimits[1] = playerCollider.bounds.center + new Vector3(0, playerCollider.bounds.extents.y, 0);
+        _playerColliderLimits[2] = playerCollider.bounds.center - new Vector3(0, playerCollider.bounds.extents.y, 0);
+        _playerColliderLimits[3] = playerCollider.bounds.center + new Vector3(playerCollider.bounds.extents.x, 0, 0);
+        _playerColliderLimits[4] = playerCollider.bounds.center - new Vector3(playerCollider.bounds.extents.x, 0,0);
+        _playerColliderLimits[5] = playerCollider.bounds.center + new Vector3(0,0, playerCollider.bounds.extents.z);
+        _playerColliderLimits[6] = playerCollider.bounds.center - new Vector3(0, 0, playerCollider.bounds.extents.z);
+        foreach (Vector3 boundPosition in _playerColliderLimits)
         {
-            return false;
+            Debug.DrawLine(_parent.transform.position, boundPosition, Color.black);
+            if (!Physics.Linecast(_parent.transform.position, boundPosition, _obstaclesLayers, QueryTriggerInteraction.Ignore))
+            {
+                return true;
+            }
         }
-        return true;
+       
+        return false;
     }
      void OnTriggerStay(Collider collision)
     {
@@ -142,7 +155,7 @@ public class Survilance : MonoBehaviour
         // si es el jugador, lo detecta y va actualizando su posicion mientras sea detectado y no tenga obstaculos en el medio
         if((1 << collision.gameObject.layer & _playerLayer) != 0)
         {
-            _playerInSight = checkPlayerCover(collision.transform.position);
+            _playerInSight = checkPlayerCover(collision);
            
             if (_playerInSight)
             {
@@ -155,12 +168,12 @@ public class Survilance : MonoBehaviour
           
         }
     }
-    private void OnTriggerExit(Collider collider)
+    private void OnTriggerExit(Collider collision)
 
     {   // en caso de que salga del cono de vision, y no este obstaculizado, guarda la ultima posicion conocida del jugador.
-        if (checkPlayerCover(collider.transform.position))
+        if (checkPlayerCover(collision))
         {
-          _enemyAgent.LastPlayerPosition = collider.transform.position;
+          _enemyAgent.LastPlayerPosition = collision.transform.position;
         }
         _playerInSight = false; // marca que el jugador no esta siendo visto
        
