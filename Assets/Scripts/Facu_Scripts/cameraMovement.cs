@@ -10,6 +10,7 @@ public class cameraMovement : MonoBehaviour
     [SerializeField][Range(0,50)] private float _mouseHorizontalSensitivity = 10;
     [SerializeField][Range(0, 50)] private float _mouseVerticallSensitivity = 10;
     [Header("Axis direction attributes")]
+    [SerializeField] private float _maxAngleOfCamera = 45;
     [SerializeField]private bool _xAxisInverted = false;
     [SerializeField]private bool _yAxisInverted = false;
     [Header("Camera attributes")]
@@ -51,14 +52,15 @@ public class cameraMovement : MonoBehaviour
         _xAxis = (_xAxisInverted ? -1 : 1) * Input.GetAxis("Mouse X") * _mouseHorizontalSensitivity ;
         #endregion
         #region VERTICAL_CLAMPING
-        _verticalReference = Vector3.Dot(_target.up, (transform.position - _target.position).normalized);
-        if(_verticalReference < 0 ) 
-        {
-            _yAxis = Mathf.Clamp(_yAxis, 0, 1);
-        }
-        else if(_verticalReference >= 0.75)
+        _verticalReference = Vector3.Angle(_target.up, (transform.position - _target.position).normalized);
+        Debug.Log(_verticalReference);
+        if(_verticalReference < _maxAngleOfCamera/2) 
         {
             _yAxis = Mathf.Clamp(_yAxis, -1, 0);
+        }
+        else if(_verticalReference >= (90-_maxAngleOfCamera / 2))
+        {
+            _yAxis = Mathf.Clamp(_yAxis, 0, 1);
         }
         #endregion
         #region SHOULDER_CAM_TO_NORMAL_CAM_TRANSITION && ROTATION_APPLICATION

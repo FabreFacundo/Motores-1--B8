@@ -171,6 +171,7 @@ GameObject:
   - component: {fileID: 8926384535273802962}
   - component: {fileID: 2401345404662860199}
   - component: {fileID: 8252739458015474154}
+  - component: {fileID: 2906295281218731107}
   m_Layer: 7
   m_Name: Player
   m_TagString: Player
@@ -286,6 +287,24 @@ MonoBehaviour:
   m_IgnoreFromBuild: 1
   m_ApplyToChildren: 1
   m_AffectedAgents: ffffffff
+--- !u!114 &2906295281218731107
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7240703235259957432}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 632c247f1dc23d242b6d5424be198103, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _camera: {fileID: 7696045281467257397}
+  _shootPosition: {fileID: 6854345746583426280}
+  _shootDistance: 10
+  _enemyLayer:
+    serializedVersion: 2
+    m_Bits: 64
 --- !u!1 &7435889668881249136
 GameObject:
   m_ObjectHideFlags: 0
@@ -953,6 +972,11 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 2101746533853043862}
   m_SourcePrefab: {fileID: 100100000, guid: 9bd9776ddcdfb744d989c12f1943b8ba, type: 3}
+--- !u!4 &6854345746583426280 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 2412161367050800168, guid: 9bd9776ddcdfb744d989c12f1943b8ba, type: 3}
+  m_PrefabInstance: {fileID: 9108021033678100672}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &8261669959359686033 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 9bd9776ddcdfb744d989c12f1943b8ba, type: 3}

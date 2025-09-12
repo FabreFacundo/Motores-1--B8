@@ -51,16 +51,10 @@ public class PlayerMovement : MonoBehaviour
         get { return _maxForceApplied; }
         set { _maxForceApplied = value < 0 ? 0 : value; }
     }
-    /* public float JumpForce
-     {
-         get { return _jumpForce; }
-         set { _jumpForce = value<0? 0:value; }
-     }
-     public LayerMask FloorLayer
-     {
-         get { return _floorLayer; }
-         set { _floorLayer = value; }
-     }*/
+    public bool OnShoulderCam
+    {
+        get { return _onShoulderCam; }
+    }
     #endregion
 
 

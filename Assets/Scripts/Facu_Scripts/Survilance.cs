@@ -14,7 +14,7 @@ public class Survilance : MonoBehaviour
     [SerializeField] private LayerMask _obstaclesLayers;
     [Header("Search cone Attributes")]
     [SerializeField] private float _coneRotationSpeed;
-    [SerializeField] private float _maxAngle = 90f;
+    [SerializeField] [Range(0,179)] private float _maxAngle = 90f;
     [SerializeField] private float _minimalDetectionDistance = 2;
     
     [Header("Parent transform")]
@@ -30,7 +30,7 @@ public class Survilance : MonoBehaviour
     private int _direction;
     Vector3[] _playerColliderLimits = new Vector3[7];
     #endregion
-
+    #region PROPERTIES
     public float DetectedTime
     {
         get { return _detectedTime; }
@@ -49,7 +49,7 @@ public class Survilance : MonoBehaviour
             }
         }
     }
-
+    #endregion
     private void Start()
     {
         _enemyAgent = GetComponentInParent<Enemy_agent>();

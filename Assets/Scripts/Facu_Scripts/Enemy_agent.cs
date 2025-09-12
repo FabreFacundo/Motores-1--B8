@@ -116,7 +116,7 @@ public class Enemy_agent : MonoBehaviour
         _agent.destination = _player.position;
 
         // comprueba la distancia faltante, si es menor a la minima de ataque, se detiene y ataca, de lo contrario sigue adelante
-        if (_agent.remainingDistance < _minimalAttacKDistance)
+        if (_agent.remainingDistance <= _minimalAttacKDistance)
         {
             _agent.isStopped = true;
             Debug.Log("Atacando al jugador");
