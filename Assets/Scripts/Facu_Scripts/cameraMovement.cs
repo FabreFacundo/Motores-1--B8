@@ -53,7 +53,6 @@ public class cameraMovement : MonoBehaviour
         #endregion
         #region VERTICAL_CLAMPING
         _verticalReference = Vector3.Angle(_target.up, (transform.position - _target.position).normalized);
-        Debug.Log(_verticalReference);
         if(_verticalReference < _maxAngleOfCamera/2) 
         {
             _yAxis = Mathf.Clamp(_yAxis, -1, 0);

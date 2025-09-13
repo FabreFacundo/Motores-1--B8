@@ -26,7 +26,7 @@ public class Enemy_agent : MonoBehaviour
     [SerializeField][Range(0.1f, 50f)] private float _aceleration = 5f;
 
     [Header("Attack attributes")]
-    [SerializeField][Range(0.1f, 50f)] private float _minimalAttacKDistance = 2;
+    [SerializeField][Range(0.1f, 50f)] private float _minimalAttackDistance = 2;
 
     [Header("Searching attributes")]
     [SerializeField][Range(0.1f, 50f)] private float _searchingTime = 5;
@@ -45,7 +45,7 @@ public class Enemy_agent : MonoBehaviour
     private bool _invertPatrol;
     private float _elapsedTime=0;
     private Transform _player;
-
+    private SecurityGuard _securityGuard;
     #endregion
     #region PROPERTIES
     public bool OnInvestigation
@@ -84,6 +84,7 @@ public class Enemy_agent : MonoBehaviour
         _agent.acceleration = _aceleration;
         _agent.stoppingDistance = _stoppingDistance;
         _player = GameObject.Find("Player").transform;
+        _securityGuard = GetComponent<SecurityGuard>();
     }
     void Update()
     {
@@ -110,18 +111,18 @@ public class Enemy_agent : MonoBehaviour
     {
         // comprueba la existencia del jugador antes de querer atacar
         if (_player == null) return;
-        
+        if (_agent.isStopped) return;
         //modifica la velocidad y asigna el destino del navmesh agent a la posicion del jugador
         _agent.speed = _attackingSpeed;
         _agent.destination = _player.position;
 
         // comprueba la distancia faltante, si es menor a la minima de ataque, se detiene y ataca, de lo contrario sigue adelante
-        if (_agent.remainingDistance <= _minimalAttacKDistance)
+        if (_agent.remainingDistance < _minimalAttackDistance)
         {
             _agent.isStopped = true;
-            Debug.Log("Atacando al jugador");
+            _securityGuard.Attack();
         }
-        else _agent.isStopped = false;
+        
     }
     private void Investigate()
     {
