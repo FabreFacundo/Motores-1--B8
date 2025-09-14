@@ -410,7 +410,7 @@ PrefabInstance:
       objectReference: {fileID: 1141983149}
     - target: {fileID: 2271646858181416545, guid: 90a264a335e63604bbd79d579a06f626, type: 3}
       propertyPath: m_VersionIndex
-      value: 1269
+      value: 1278
       objectReference: {fileID: 0}
     - target: {fileID: 3353094025996729129, guid: 90a264a335e63604bbd79d579a06f626, type: 3}
       propertyPath: m_LocalPosition.x
@@ -451,6 +451,10 @@ PrefabInstance:
     - target: {fileID: 3353094025996729129, guid: 90a264a335e63604bbd79d579a06f626, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6856779084573821914, guid: 90a264a335e63604bbd79d579a06f626, type: 3}
+      propertyPath: _obstaclesLayers.m_Bits
+      value: 31
       objectReference: {fileID: 0}
     - target: {fileID: 8679059904366711469, guid: 90a264a335e63604bbd79d579a06f626, type: 3}
       propertyPath: m_Mesh
@@ -3122,7 +3126,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4278790100938859978, guid: 605fdfc9e28293b4e9a77bb0f6afcc0f, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -20.6
+      value: -25.3
       objectReference: {fileID: 0}
     - target: {fileID: 4278790100938859978, guid: 605fdfc9e28293b4e9a77bb0f6afcc0f, type: 3}
       propertyPath: m_LocalRotation.w
@@ -3155,6 +3159,10 @@ PrefabInstance:
     - target: {fileID: 7240703235259957432, guid: 605fdfc9e28293b4e9a77bb0f6afcc0f, type: 3}
       propertyPath: m_Name
       value: Player
+      objectReference: {fileID: 0}
+    - target: {fileID: 8926384535273802962, guid: 605fdfc9e28293b4e9a77bb0f6afcc0f, type: 3}
+      propertyPath: _maxNormalVelocity
+      value: 6
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
